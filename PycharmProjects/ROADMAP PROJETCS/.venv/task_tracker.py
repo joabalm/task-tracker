@@ -11,7 +11,7 @@ date_time_str = date_time_now.strftime("%d/%m/%Y %H:%M")
 # Function to add a new task
 def add(description):
     # Load the JSON data from the file
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         data = json.load(file)  # Ensure this is a list
 
     # If data is not a list, initialize it as a list
@@ -26,7 +26,7 @@ def add(description):
     new_task = {
         "id": new_id,
         "description": description,
-        "status": "",
+        "status": "to do",
         "creatAt": date_time_str,
         "updateAt": ""
     }
@@ -35,10 +35,10 @@ def add(description):
     data.append(new_task)
 
     # Save the updated list of tasks back to the file
-    with open(file_path, "w") as file:
-        json.dump(data, file, indent=4)
+    with open(file_path, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
 
-    #
+    # Return the result
     print(f"Task added successfully (ID: {new_id})")
 
 # Function to delete the task
@@ -67,16 +67,14 @@ def delete(id_delete):
         print(f"Task of ID {id_delete} not found.")
 
         # Save the updated data back to the file
-    with open(file_path, "w") as file:
-        json.dump(data, file, indent=4)
-
-
+    with open(file_path, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
 
 # Function to update the task
-def update(id_update, description, status):
+def update(id_update, description):
 
     # Load the JSON data from the file
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         data = json.load(file)  # Ensure this is a list
 
     # If data is not a list, initialize it as a list
@@ -84,26 +82,24 @@ def update(id_update, description, status):
         data = []
 
     # Identify the id and create the update
+    update = False
     for index, task in enumerate(data):
         id_update = int(id_update)
         if task.get("id") == id_update:
-            update_task = {
-                "id": 6,
-                "description": description,
-                "status": status,
-                "creatAt": "14/08/2024 15:42",
-                "updateAt": date_time_str
-            }
+            task["description"] = description,
+            task["updateAt"] = date_time_str
+            update = True
             break
-    # Append the new task to the list
-    data.append(update_task)
+
+    #Return the result
+    if update:
+        print(f"Task of ID {id_update} updated successfully.")
+    else:
+        print(f"Task of ID {id_update} not found.")
 
     # Save the updated list of tasks to the file
-    with open(file_path, "w") as file:
-        json.dump(data, file, indent=4)
-
-
-
+    with open(file_path, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
 
 # Main function to parse CLI arguments
 def main():
@@ -122,6 +118,11 @@ def main():
     parser_delete = subparsers.add_parser("delete", help="Delete a task")
     parser_delete.add_argument("id_delete",type=str, help="task id to be deleted")
 
+    # Subparse for "update" command
+    parser_update = subparsers.add_parser("update", help="Update the task")
+    parser_update.add_argument("id_update", type=str, help="task id to be updated")
+    parser_update.add_argument("description", type=str, help="task description to be updated")
+
     # Parse the arguments
     args = parser.parse_args()
 
@@ -130,6 +131,8 @@ def main():
         add(args.description)
     elif args.command == "delete":
         delete(args.id_delete)
+    elif args.command == "update":
+        update(args.id_update,args.description)
     else:
         parser.print_help()
 
