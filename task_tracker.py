@@ -1,6 +1,7 @@
 import argparse
 from datetime import datetime
 import json
+import pandas as pd
 
 file_path = "data.json"
 
@@ -143,6 +144,7 @@ def mark_done(id_update_task):
 
     update = False
     for index, task in enumerate(data):
+        id_update_task = int(id_update_task)
         if task.get("id") == id_update_task:
             task["status"] = "done";
             task["updateAt"] = date_time_str
@@ -155,8 +157,41 @@ def mark_done(id_update_task):
         print("The task with ID {}, is not found".format(id_update_task))
 
     with open(file_path, "w", encoding="utf-8") as file:
-        json.dump(data, file, indent=4,ensure_ascii=False)
+        json.dump(data, file, indent=4, ensure_ascii=False)
 
+def list_tasks():
+
+    with open(file_path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+
+    df = pd.DataFrame(data)
+    print(df)
+
+
+def list_done():
+
+    with open(file_path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+
+    result = [d for d in data if d['status'] == "done"]
+    df = pd.DataFrame(result)
+    print(df)
+
+def list_todo():
+    with open(file_path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+
+    result = [d for d in data if d['status'] == "to do"]
+    df = pd.DataFrame(result)
+    print(df)
+
+def list_in_progress():
+    with open(file_path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+
+    result = [d for d in data if d['status'] == "in-progress"]
+    df = pd.DataFrame(result)
+    print(df)
 
 # Main function to parse CLI arguments
 def main():
@@ -185,8 +220,23 @@ def main():
     parser_mark_in_progress.add_argument("id_update_status", type=str, help="task id to be updated")
 
     # Subparser for "mark-done" command
-    subparser_update_done = subparsers.add_parser("Done", help="Update the status with is done")
-    subparser_update_done.add_argument("id_update_task", type=str, help="Task id for update with is done")
+    parser_update_done = subparsers.add_parser("mark_done", help="Update the status with is done")
+    parser_update_done.add_argument("id_update_task", type=str, help="Task id for update with is done")
+
+    # Subparser for "list" command
+    parser_list_tasks = subparsers.add_parser("list", help="List all tasks")
+
+    # Subparser for "list_done" command
+    parser_list_done = subparsers.add_parser("list.done", help="All tasks with done status")
+
+    # Subparser for "list_done" command
+    parser_list_todo = subparsers.add_parser("list.todo", help="All tasks with to do status")
+
+    # Subparser for "list_done" command
+    parser_list_in_progress = subparsers.add_parser("list.inprogress", help="All tasks with in progress status")
+
+
+
 
     # Parse the arguments
     args = parser.parse_args()
@@ -202,6 +252,14 @@ def main():
         mark_in_progess(args.id_update_status)
     elif args.command == "mark_done":
         mark_done(args.id_update_task)
+    elif args.command == "list":
+        list(args.status)
+    elif args.command == "list.done":
+        list_done()
+    elif args.command == "list.todo":
+        list_todo()
+    elif args.command == "list.inprogress":
+        list_in_progress()
     else:
         parser.print_help()
 
