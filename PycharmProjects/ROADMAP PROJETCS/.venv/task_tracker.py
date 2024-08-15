@@ -86,7 +86,7 @@ def update(id_update, description):
     for index, task in enumerate(data):
         id_update = int(id_update)
         if task.get("id") == id_update:
-            task["description"] = description,
+            task["description"] = description;
             task["updateAt"] = date_time_str
             update = True
             break
@@ -97,9 +97,66 @@ def update(id_update, description):
     else:
         print(f"Task of ID {id_update} not found.")
 
-    # Save the updated list of tasks to the file
+    # Save the updated list of tasks from the file
     with open(file_path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
+
+# Function to update the task status to in-progress
+def mark_in_progess(id_update_status):
+
+    # Load the JSON data from the file
+    with open(file_path, "r",encoding="utf-8") as file:
+        data = json.load(file)
+
+    # If data is not a list, initialize it as a list
+    if not isinstance(data, list):
+        data = []
+
+    # Update the status of the task
+    update = False
+    for index, task in enumerate(data):
+        id_update_status = int(id_update_status)
+        if task.get("id") == id_update_status:
+            task["status"] = "in-progress";
+            task["updateAt"] = date_time_str
+            update = True
+            break
+    # Return the result
+    if update:
+        print(f"The task with ID {id_update_status} was updated successfully")
+    else:
+        print(f"The task with ID {id_update_status} is not found")
+
+    # Save the updatd list of tasks from the file
+    with open(file_path, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
+
+
+# Funcion mark-done
+def mark_done(id_update_task):
+
+    with open(file_path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+
+    if not isinstance(data, list):
+        data = []
+
+    update = False
+    for index, task in enumerate(data):
+        if task.get("id") == id_update_task:
+            task["status"] = "done";
+            task["updateAt"] = date_time_str
+            update = True
+            break
+
+    if update:
+        print("The task with ID {}, is done".format(id_update_task))
+    else:
+        print("The task with ID {}, is not found".format(id_update_task))
+
+    with open(file_path, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4,ensure_ascii=False)
+
 
 # Main function to parse CLI arguments
 def main():
@@ -123,6 +180,14 @@ def main():
     parser_update.add_argument("id_update", type=str, help="task id to be updated")
     parser_update.add_argument("description", type=str, help="task description to be updated")
 
+    # Subparser for "mark-in-progress"
+    parser_mark_in_progress = subparsers.add_parser("mark_in_progress", help="Updated the task status")
+    parser_mark_in_progress.add_argument("id_update_status", type=str, help="task id to be updated")
+
+    # Subparser for "mark-done" command
+    subparser_update_done = subparsers.add_parser("Done", help="Update the status with is done")
+    subparser_update_done.add_argument("id_update_task", type=str, help="Task id for update with is done")
+
     # Parse the arguments
     args = parser.parse_args()
 
@@ -133,6 +198,10 @@ def main():
         delete(args.id_delete)
     elif args.command == "update":
         update(args.id_update,args.description)
+    elif args.command == "mark_in_progress":
+        mark_in_progess(args.id_update_status)
+    elif args.command == "mark_done":
+        mark_done(args.id_update_task)
     else:
         parser.print_help()
 
